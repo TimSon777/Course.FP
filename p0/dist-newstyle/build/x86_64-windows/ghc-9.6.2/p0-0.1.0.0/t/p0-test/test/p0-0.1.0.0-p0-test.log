@@ -1,0 +1,21 @@
+Test suite p0-test: RUNNING...
+All Tests
+  Reused less then 1 cycle
+    first list is longer than second: OK
+    second list is longer than first: OK
+  Same length
+    lists of equal length:            OK
+  Reused 1 cycle
+    first list is longer than second: FAIL
+      test\Main.hs:25:
+      expected: [(1,'A'),(2,'B'),(3,'A'),(4,'B')]
+       but got: [(1,'A'),(2,'B'),(3,'A'),(5,'B')]
+      Use -p '/Reused 1 cycle.first list is longer than second/' to rerun this test only.
+    second list is longer than first: OK
+  Reused more then 1 cycle
+    first list is longer than second: OK
+    second list is longer than first: OK
+
+1 out of 7 tests failed (0.00s)
+Test suite p0-test: FAIL
+Test suite logged to: D:\Course.FP\p0\dist-newstyle\build\x86_64-windows\ghc-9.6.2\p0-0.1.0.0\t\p0-test\test\p0-0.1.0.0-p0-test.log

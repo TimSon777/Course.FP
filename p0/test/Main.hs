@@ -8,6 +8,7 @@ import Hedgehog
 import Test.Tasty.Hedgehog as Hedgehog
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
+import Data.List
 
 main :: IO ()
 main = defaultMain tests
@@ -63,7 +64,7 @@ property_zipLong = property $ do
   let expected = testZipLong xs ys
   result === expected
 
-tests = testGroup "All Tests"
+testsZipLong = testGroup "zipLong"
   [
     testGroup "Reused less then 1 cycle" [
       testCase1,
@@ -89,4 +90,54 @@ tests = testGroup "All Tests"
     testGroup "Property" [
       Hedgehog.testProperty "Hedgehog" property_zipLong
     ]
+  ]
+
+isCorrect :: Ord a => Tree a -> Bool
+isCorrect Empty = True
+isCorrect (Node ml v mr) = maybe True isCorrect ml &&
+  maybe True isCorrect mr &&
+  all (<=v) (maybe [] traversal ml) &&
+  all (>=v) (maybe [] traversal mr)
+
+arbitraryTree :: (Int, Int) -> Size -> Gen (Tree Int)
+arbitraryTree (minVal, maxVal) 0 = pure empty
+arbitraryTree (minVal, maxVal) size = do
+  leftSize <- Size <$> Gen.int (Range.linear 0 $ unSize size - 1)
+  let rightSize = size - leftSize - 1
+  v <- Gen.int $ Range.linear minVal maxVal
+  l <- if leftSize == 0
+       then pure Nothing
+       else Just <$> arbitraryTree (minVal, v) leftSize
+  r <- if rightSize == 0
+       then pure Nothing
+       else Just <$> arbitraryTree (v, maxVal) rightSize
+  
+  pure $ Node l v r
+
+treeGen :: Gen (Tree Int)
+treeGen = Gen.sized $ arbitraryTree (0, 1000)
+
+property_rotateLeft = property $ do
+  originalTree <- forAll treeGen
+  Hedgehog.assert $ isCorrect originalTree
+  Hedgehog.assert $ (sort $ traversal originalTree) == (sort $ traversal $ rotateLeft originalTree)
+
+property_rotateRight = property $ do
+  originalTree <- forAll treeGen
+  Hedgehog.assert $ isCorrect originalTree
+  Hedgehog.assert $ (sort $ traversal originalTree) == (sort $ traversal $ rotateRight originalTree)
+
+testsRotate = testGroup "Rotate"
+  [
+    testGroup "Rotate"
+      [
+        Hedgehog.testProperty "Left" property_rotateLeft,
+        Hedgehog.testProperty "Right" property_rotateRight
+      ]
+  ]
+
+tests = testGroup "All tests"
+  [
+    testsZipLong,
+    testsRotate
   ]

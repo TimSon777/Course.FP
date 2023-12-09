@@ -8,7 +8,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
 data Currency = RUB | USD deriving (Show, Eq)
-data Account = Account { currency :: Currency, balance :: Int } deriving (Show, Eq)
+data Account = Account { currency :: Currency, balance :: Amount } deriving (Show, Eq)
 
 type UserName = String
 type Bank = TVar (Users, Account)

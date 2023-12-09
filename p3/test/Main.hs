@@ -82,7 +82,7 @@ registerUser_2 = do
 
   -- act
   atomically $ registerUser userName bank
-  atomically $ createAccount userName USD bank
+  _ <- atomically $ createAccount userName USD bank
   atomically $ registerUser userName bank
 
   -- assert
@@ -197,9 +197,8 @@ putMoney_1 = do
   userAccounts <- atomically $ readTVar userAccountsVar
   let Just account = IntMap.lookup newAccountId userAccounts
 
-  balance account @?= 99
+  balance account @?= 100
   currency account @?= USD
-  balance bankAccount @?= 1
 
 withdrowMoney_1 :: Assertion
 withdrowMoney_1 = do
@@ -220,9 +219,9 @@ withdrowMoney_1 = do
   let Just account = IntMap.lookup newAccountId userAccounts
 
   amount @?= 9
-  balance account @?= 89
+  balance account @?= 90
   currency account @?= USD
-  balance bankAccount @?= 2
+  balance bankAccount @?= 1
   
 withdrowMoney_2 :: Assertion
 withdrowMoney_2 = do
@@ -234,7 +233,7 @@ withdrowMoney_2 = do
   atomically $ putMoney userName newAccountId RUB 10000 bank
 
   -- act
-  (amount, _) <- atomically $ withdrowMoney userName newAccountId 100 bank
+  (amount, _) <- atomically $ withdrowMoney userName newAccountId 1000 bank
 
   -- assert
   (users, bankAccount) <- atomically $ readTVar bank
@@ -243,9 +242,9 @@ withdrowMoney_2 = do
   let Just account = IntMap.lookup newAccountId userAccounts
 
   amount @?= 0
-  balance account @?= 99
+  balance account @?= 100
   currency account @?= USD
-  balance bankAccount @?= 1
+  balance bankAccount @?= 0
 
 transferMoney_1 :: Assertion
 transferMoney_1 = do
@@ -275,9 +274,9 @@ transferMoney_1 = do
   let Just danilAccount = IntMap.lookup danilAccountId danilAccounts
 
   isOK @?= True
-  balance timurAccount @?= 89
-  balance danilAccount @?= 1188
-  balance bankAccount @?= 2
+  balance timurAccount @?= 90
+  balance danilAccount @?= 1200
+  balance bankAccount @?= 1
 
 transferMoney_2 :: Assertion
 transferMoney_2 = do
@@ -329,9 +328,9 @@ internalTransferMoney_1 = do
   let Just account2 = IntMap.lookup accId2 userAccounts
 
   isOK @?= True
-  balance account1 @?= 89
-  balance account2 @?= 891
-  balance bankAccount @?= 2
+  balance account1 @?= 90
+  balance account2 @?= 900
+  balance bankAccount @?= 1
 
 internalTransferMoney_2 :: Assertion
 internalTransferMoney_2 = do
@@ -347,12 +346,6 @@ internalTransferMoney_2 = do
   isOK <- atomically $ internalTransferMoney userName accId1 accId2 10000 bank
 
   -- assert
-  (users, bankAccount) <- atomically $ readTVar bank
-  let Just userAccountsVar = Map.lookup userName users
-  userAccounts <- atomically $ readTVar userAccountsVar
-  let Just account1 = IntMap.lookup accId1 userAccounts
-  let Just account2 = IntMap.lookup accId2 userAccounts
-
   isOK @?= False
 
 calculateFee_1 :: Assertion

@@ -88,14 +88,10 @@ putMoney name accId curr amount bank = do
   case IntMap.lookup accId userAccounts of
     Just acc -> do
       let convertedAmount = convertMoney curr (currency acc) amount
-      let fee = calculateFee convertedAmount
       let accCurrency = currency acc
-      let userUpdatedAcc = acc { balance = balance acc + convertedAmount - fee }
+      let userUpdatedAcc = acc { balance = balance acc + convertedAmount }
       let updatedAccounts = IntMap.insert accId userUpdatedAcc userAccounts
       writeTVar userAccountsVar updatedAccounts
-      let bankFee = convertMoney (currency acc) USD fee
-      let bankUpdatedAcc = bankAcc { balance = balance bankAcc + bankFee }
-      writeTVar bank (users, bankUpdatedAcc)
     Nothing -> error "Account not found"
 
 withdrowMoney :: UserName -> AccountId -> Amount -> Bank -> STM (Amount, Currency)
